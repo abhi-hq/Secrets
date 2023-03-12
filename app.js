@@ -8,14 +8,18 @@ const passport=require("passport");
 const passportlocalmongoose=require("passport-local-mongoose");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate=require("mongoose-findorcreate")
+
 /*level 2 just using mongoose-encryption, that is secret key, then .env to put it in environment variables
 then Level 3 hashing the password by md5
 then level 4 bcrypt: salt+hashing password
-then Level 5 using passport js to authenticate, passportlocalmongoose to form salt+hash password*/
+then Level 5 using passport js to authenticate, passportlocalmongoose to form salt+hash password*
+Now level 6 using passport js, OAuth 2.0 to sign in with google or any other platform, so that the info is authenticated by them i.e no password leakage caution,
+Authorization due to OAuth 2.0, so that data can be accessed by the web app from user data in Google*/
 
 
 
 const app=express();
+const port=process.env.PORT || 3000;
 
 app.set('view engine', 'ejs');
 
@@ -34,7 +38,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 mongoose.set('strictQuery',true);
-mongoose.connect("mongodb://127.0.0.1:27017/UserDB",{useNewUrlParser: true, useUnifiedTopology: true}); 
+mongoose.connect("mongodb+srv://abhirede:rawraptor@cluster0.jj2sakq.mongodb.net/UserDB",{useNewUrlParser: true, useUnifiedTopology: true}); 
 
 const userschema=new mongoose.Schema({
     email:String,
@@ -66,7 +70,6 @@ passport.use(new GoogleStrategy({
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
-    console.log(profile);
 
     User.findOrCreate({ googleId: profile.id }, function (err, user) {
       return cb(err, user);
@@ -172,6 +175,6 @@ app.post("/submit",(req,res)=>{
 })
 
 
-app.listen(3000,()=>{
-    console.log("Server at port 3000 started");
+app.listen(port,()=>{
+    console.log("Server at port started");
 })
